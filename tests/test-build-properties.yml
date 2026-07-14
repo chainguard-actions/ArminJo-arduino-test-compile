@@ -1,0 +1,22 @@
+name: Test Arduino compile with build-properties
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          sketch-names: 'Blink.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches'
+          arduino-board-fqbn: 'arduino:avr:uno'
+          build-properties: '{ "All": "-DTEST_FLAG" }'
+          cli-version: 'latest'
+
+      - name: Assert compilation with build-properties succeeded
+        run: |
+          echo "Compilation with build-properties completed successfully"
+          echo "PASS"
