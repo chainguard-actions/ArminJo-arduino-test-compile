@@ -1,6 +1,6 @@
 # ArminJo/arduino-test-compile
 
-Compile sketches or Arduino library examples for one board type using arduino-cli and check for errors.
+Compile sketches or Arduino library examples for one board type using arduino-cli and check for errors
 
 Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/ArminJo/arduino-test-compile](https://github.com/ArminJo/arduino-test-compile).
 
