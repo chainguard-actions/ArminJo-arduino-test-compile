@@ -1,0 +1,22 @@
+name: Test wildcard sketch-names pattern
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Compile all *.ino sketches found in fixture directory
+        id: action
+        uses: .
+        with:
+          arduino-board-fqbn: 'arduino:avr:uno'
+          sketch-names: '*.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches'
+          cli-version: 'latest'
+
+      - name: Assert wildcard compilation succeeded
+        run: |
+          echo "Wildcard *.ino compilation step completed successfully"
+          echo "PASS: wildcard sketch-names compilation succeeded"

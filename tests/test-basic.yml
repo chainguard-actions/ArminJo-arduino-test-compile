@@ -1,0 +1,22 @@
+name: Test basic Arduino compile (arduino:avr:uno)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Compile minimal sketch for arduino:avr:uno
+        id: action
+        uses: .
+        with:
+          arduino-board-fqbn: 'arduino:avr:uno'
+          sketch-names: 'MinimalSketch.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches'
+          cli-version: 'latest'
+
+      - name: Assert compilation succeeded
+        run: |
+          echo "Compilation step completed successfully"
+          echo "PASS: arduino:avr:uno compilation succeeded"
