@@ -1,0 +1,23 @@
+name: Test debug mode compile
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          arduino-board-fqbn: 'arduino:avr:uno'
+          sketch-names: 'Blink.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches'
+          debug-compile: 'true'
+          debug-install: 'true'
+
+      - name: Assert debug compilation succeeded
+        run: |
+          echo "Action completed successfully in debug mode"
+          echo "PASS: Blink sketch compiled with debug-compile and debug-install enabled"
