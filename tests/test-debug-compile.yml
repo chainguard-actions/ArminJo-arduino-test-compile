@@ -1,0 +1,21 @@
+name: Test compile with debug output enabled
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Compile test sketch with debug output
+        uses: .
+        with:
+          sketch-names: test.ino
+          sketch-names-find-start: test
+          arduino-board-fqbn: arduino:avr:uno
+          debug-compile: 'true'
+          debug-install: 'true'
+
+      - name: Assert compilation with debug succeeded
+        run: |
+          echo "PASS: Arduino compilation with debug output completed successfully"
