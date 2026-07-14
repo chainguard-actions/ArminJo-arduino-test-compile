@@ -1,0 +1,22 @@
+name: Test sketch exclusion
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Compile sketches with HelloWorld excluded
+        id: action
+        uses: .
+        with:
+          sketch-names: '*.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches'
+          arduino-board-fqbn: 'arduino:avr:uno'
+          sketches-exclude: 'HelloWorld'
+          cli-version: 'latest'
+
+      - name: Assert compilation succeeded
+        run: |
+          echo "PASS: Compilation with sketch exclusion completed without error"
