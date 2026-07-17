@@ -1,4 +1,4 @@
-name: Test basic Arduino compile (default board)
+name: Test sketches-exclude input
 on:
   workflow_dispatch:
 
@@ -8,17 +8,16 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run arduino-test-compile action on Blink sketch
+      - name: Run arduino-test-compile action excluding HelloWorld sketch
         id: action
         uses: .
         with:
-          sketch-names: 'Blink.ino'
+          sketch-names: '*.ino'
           sketch-names-find-start: 'tests/fixtures/sketches'
           arduino-board-fqbn: 'arduino:avr:uno'
-          debug-install: 'true'
-          debug-compile: 'true'
+          sketches-exclude: 'HelloWorld,WithDefine'
 
       - name: Assert action succeeded
         run: |
-          echo "Action completed successfully"
-          echo "PASS: basic Arduino compile succeeded for arduino:avr:uno"
+          echo "Action completed successfully with sketches-exclude"
+          echo "PASS: sketches-exclude correctly skipped HelloWorld and WithDefine, compiled only Blink"

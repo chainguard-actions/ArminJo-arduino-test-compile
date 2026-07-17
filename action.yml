@@ -108,8 +108,7 @@ runs:
         ENV_SET_BUILD_PATH: ${{ inputs.set-build-path }}
         ENV_DEBUG_COMPILE: ${{ inputs.debug-compile }}
         ENV_DEBUG_INSTALL: ${{ inputs.debug-install }}
-        ACTION_PATH: ${{ github.action_path }}
-      run: "$ACTION_PATH/arduino-test-compile.sh"
+      run: $GITHUB_ACTION_PATH/arduino-test-compile.sh
       shell: bash
 branding:
   icon: 'eye'

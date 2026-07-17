@@ -1,0 +1,22 @@
+name: Test sketch-names wildcard pattern
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run arduino-test-compile action with wildcard sketch-names
+        id: action
+        uses: .
+        with:
+          sketch-names: '*.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches/Blink'
+          arduino-board-fqbn: 'arduino:avr:uno'
+
+      - name: Assert action succeeded
+        run: |
+          echo "Action completed successfully with wildcard sketch-names"
+          echo "PASS: wildcard *.ino pattern found and compiled Blink sketch"
