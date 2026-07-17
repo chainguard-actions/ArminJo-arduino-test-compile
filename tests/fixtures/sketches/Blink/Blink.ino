@@ -1,4 +1,4 @@
-// Minimal Blink sketch for test compilation
+// Simple Blink sketch for testing arduino-test-compile action
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 }

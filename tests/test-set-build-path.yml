@@ -1,0 +1,33 @@
+name: Test set-build-path parameter
+on:
+  workflow_dispatch:
+
+jobs:
+  test-set-build-path:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run arduino-test-compile action with set-build-path enabled
+        id: action
+        uses: .
+        with:
+          sketch-names: 'Blink.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches'
+          arduino-board-fqbn: 'arduino:avr:uno'
+          cli-version: 'latest'
+          set-build-path: 'true'
+
+      - name: Assert build directory was created
+        run: |
+          BUILD_DIR="$GITHUB_WORKSPACE/tests/fixtures/sketches/Blink/build"
+          echo "Checking for build directory at: $BUILD_DIR"
+          if [ -d "$BUILD_DIR" ]; then
+            echo "PASS: Build directory exists at $BUILD_DIR"
+            ls -la "$BUILD_DIR"
+          else
+            echo "FAIL: Expected build directory not found at $BUILD_DIR"
+            echo "Contents of sketch directory:"
+            ls -la "$GITHUB_WORKSPACE/tests/fixtures/sketches/Blink/"
+            exit 1
+          fi

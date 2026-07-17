@@ -1,0 +1,23 @@
+name: Test build-properties parameter
+on:
+  workflow_dispatch:
+
+jobs:
+  test-build-properties:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run arduino-test-compile action with build-properties
+        id: action
+        uses: .
+        with:
+          sketch-names: 'ConditionalBlink.ino'
+          sketch-names-find-start: 'tests/fixtures/sketches'
+          arduino-board-fqbn: 'arduino:avr:uno'
+          cli-version: 'latest'
+          build-properties: '{ "ConditionalBlink": "-DBLINK_DELAY=500" }'
+
+      - name: Assert compilation with build-properties succeeded
+        run: |
+          echo "PASS: ConditionalBlink sketch compiled successfully with -DBLINK_DELAY=500"

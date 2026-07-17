@@ -1,14 +1,14 @@
-name: Test debug-compile and debug-install flags
+name: Test basic Arduino sketch compilation
 on:
   workflow_dispatch:
 
 jobs:
-  test-debug-mode:
+  test-basic:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run arduino-test-compile action with debug flags enabled
+      - name: Run arduino-test-compile action on Blink sketch
         id: action
         uses: .
         with:
@@ -16,9 +16,7 @@ jobs:
           sketch-names-find-start: 'tests/fixtures/sketches'
           arduino-board-fqbn: 'arduino:avr:uno'
           cli-version: 'latest'
-          debug-compile: 'true'
-          debug-install: 'true'
 
-      - name: Assert compilation with debug flags succeeded
+      - name: Assert compilation succeeded
         run: |
-          echo "PASS: Blink sketch compiled successfully with debug-compile and debug-install enabled"
+          echo "PASS: Blink sketch compiled successfully for arduino:avr:uno"
