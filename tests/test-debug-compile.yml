@@ -1,4 +1,4 @@
-name: Test build properties
+name: Test debug compile mode
 on:
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/Blink"
           cp "$GITHUB_WORKSPACE/tests/fixtures/sketches/Blink/Blink.ino" "$GITHUB_WORKSPACE/Blink/Blink.ino"
 
-      - name: Compile with build properties
+      - name: Compile with debug-compile enabled
         id: action
         uses: .
         with:
@@ -21,9 +21,9 @@ jobs:
           sketch-names-find-start: 'Blink'
           arduino-board-fqbn: 'arduino:avr:uno'
           cli-version: 'latest'
-          build-properties: '{ "All": "-DTEST_FLAG" }'
+          debug-compile: 'true'
 
-      - name: Assert compilation with build properties succeeded
+      - name: Assert debug compilation succeeded
         run: |
-          echo "Compilation with build properties completed successfully"
-          echo "PASS: arduino:avr:uno compilation with -DTEST_FLAG succeeded"
+          echo "Debug compilation step completed successfully"
+          echo "PASS: arduino:avr:uno debug compilation succeeded"

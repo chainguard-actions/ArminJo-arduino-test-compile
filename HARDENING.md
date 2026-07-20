@@ -8,35 +8,48 @@
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
-**Harden Agent Version:** `1`
+**Harden Agent Version:** `2`
 
-Action **ArminJo--arduino-test-compile/v3** was hardened automatically. 1 finding(s) were identified and resolved across 2 iteration(s).
+Action **ArminJo--arduino-test-compile/v3** was hardened automatically. 3 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### script-injection (severity: high)
 
-Sub-rule (a): A ${{ ... }} expression is directly interpolated inside a `run:` shell command string in action.yml. The line `run: ${{ github.action_path }}/arduino-test-compile.sh` embeds the GitHub Actions expression `${{ github.action_path }}` directly into the shell command before the shell ever sees it. Although `github.action_path` is not attacker-controlled, any `${{ ... }}` expression inside a `run:` block is a script-injection risk because the value is substituted by the YAML template engine before the shell parses it, bypassing shell quoting. The safe alternative is to use the pre-set environment variable `$GITHUB_ACTION_PATH` instead: `run: "$GITHUB_ACTION_PATH/arduino-test-compile.sh"`
+Sub-rule (a): The `run:` field in action.yml directly interpolates the GitHub Actions expression `${{ github.action_path }}` into the shell command string. Any `${{ ... }}` expression inside a `run:` block is a script-injection risk because the value is substituted by the Actions runner before the shell ever sees it, bypassing shell quoting. The offending line is: `run: ${{ github.action_path }}/arduino-test-compile.sh`. This should be replaced with the environment variable `$GITHUB_ACTION_PATH` which is always available in composite actions.
 
 Locations:
 
-- `action.yml:100`
+- `action.yml:107`
+
+### unpinned-uses (severity: high)
+
+All `uses:` references in both workflow files use the mutable branch ref `@master` instead of a pinned 40-character commit SHA. This exposes the workflow to supply-chain attacks if the referenced action is compromised or its history is rewritten. Failing references: `actions/checkout@master` (appears twice in each workflow), and `ArminJo/arduino-test-compile@master` (in ActionTest.yml).
+
+Locations:
+
+- `.github/workflows/arduino-test-compile-ActionTest.yml:88`
+- `.github/workflows/arduino-test-compile-ActionTest.yml:92`
+- `.github/workflows/arduino-test-compile-ActionTest.yml:97`
+- `.github/workflows/arduino-test-compile-ScriptTest.yml:88`
+- `.github/workflows/arduino-test-compile-ScriptTest.yml:92`
+
+### missing-permissions (severity: medium)
+
+Neither workflow file defines a `permissions:` block at the top level, and no job within either file defines its own `permissions:` block. Without explicit permissions, workflows run with the repository's default token permissions, which may be overly broad (e.g., write access to contents, packages, etc.). A minimal `permissions: read-all` or specific per-scope permissions should be added.
+
+Locations:
+
+- `.github/workflows/arduino-test-compile-ActionTest.yml:1`
+- `.github/workflows/arduino-test-compile-ScriptTest.yml:1`
 
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** script-injection
+**Fixes applied:** script-injection, unpinned-uses, missing-permissions
 
 **Notes:**
 
-Replaced `${{ github.action_path }}/arduino-test-compile.sh` with `"$GITHUB_ACTION_PATH/arduino-test-compile.sh"` in action.yml at line 100. The pre-set environment variable `$GITHUB_ACTION_PATH` is the safe equivalent that avoids template-engine interpolation before shell parsing.
-
-### Iteration 2
-
-**Fixes applied:** script-injection
-
-**Notes:**
-
-Fixed all 6 categories of shell injection vulnerabilities in arduino-test-compile.sh: (1) Validated CLI_VERSION with a regex allowlist (^[a-zA-Z0-9._-]+$) before using it in the wget URL, and quoted the URL string; (2) Changed $PLATFORM_URL and $PLATFORM_URL_COMMAND to use ${VAR:+"$VAR"} conditional expansion so they are quoted when non-empty and absent when empty; (3) Converted EXTRA_ARDUINO_LIB_INSTALL_ARGS to a bash array (EXTRA_LIB_ARGS_ARRAY) via `read -ra` and expanded with "${EXTRA_LIB_ARGS_ARRAY[@]}"; (4) Converted EXTRA_ARDUINO_CLI_ARGS to a bash array (EXTRA_CLI_ARGS_ARRAY) via `read -ra` and expanded with "${EXTRA_CLI_ARGS_ARRAY[@]}"; (5) Changed BUILD_PATH_PARAMETER from a string to a bash array (BUILD_PATH_PARAM_ARRAY) with properly quoted path, expanded with "${BUILD_PATH_PARAM_ARRAY[@]}"; (6) Quoted $SKETCH_PATH as "$SKETCH_PATH" in all compile commands. The echo/diagnostic lines that display the command for logging purposes retain the original unquoted form for readability, but the actual command executions use safe array expansion.
+Fixed three security findings: (1) script-injection in action.yml by replacing `${{ github.action_path }}` with `$GITHUB_ACTION_PATH` environment variable; (2) pinned all unpinned @master action references to full commit SHAs - actions/checkout to 61b9e3751b92087fd0b06925ba6dd6314e06f089 and ArminJo/arduino-test-compile to d02d365b1776367122ba4c9bbfe333dbc94b2722; (3) added `permissions: contents: read` block to both workflow files (ActionTest.yml and ScriptTest.yml).
 
