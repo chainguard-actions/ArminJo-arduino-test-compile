@@ -1,4 +1,4 @@
-name: Test build properties (extra compiler flags)
+name: Test build-properties parameter
 on:
   workflow_dispatch:
 jobs:
@@ -7,16 +7,17 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Compile Blink sketch with extra build properties
+      - name: Run action with build-properties for extra compiler flags
         id: action
         uses: .
         with:
           sketch-names: 'Blink.ino'
           sketch-names-find-start: 'tests/fixtures/sketches'
           arduino-board-fqbn: 'arduino:avr:uno'
-          build-properties: '{ "All": "-DDEBUG" }'
           cli-version: 'latest'
+          build-properties: '{ "All": "-DTEST_FLAG" }'
 
-      - name: Assert compilation with build properties succeeded
+      - name: Assert compilation succeeded with build-properties
         run: |
-          echo "PASS: Compilation with build-properties completed without error"
+          echo "Action completed successfully with build-properties"
+          echo "PASS: build-properties parameter works correctly"

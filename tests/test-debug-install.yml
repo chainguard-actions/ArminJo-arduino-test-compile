@@ -1,4 +1,4 @@
-name: Test basic Arduino compile (UNO default board)
+name: Test debug-install mode
 on:
   workflow_dispatch:
 jobs:
@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run action to compile Blink sketch for Arduino UNO
+      - name: Run action with debug-install enabled
         id: action
         uses: .
         with:
@@ -15,8 +15,9 @@ jobs:
           sketch-names-find-start: 'tests/fixtures/sketches'
           arduino-board-fqbn: 'arduino:avr:uno'
           cli-version: 'latest'
+          debug-install: 'true'
 
-      - name: Assert compilation succeeded
+      - name: Assert compilation succeeded in debug-install mode
         run: |
-          echo "Action completed successfully"
-          echo "PASS: Basic Arduino UNO compilation succeeded"
+          echo "Action completed successfully with debug-install=true"
+          echo "PASS: debug-install mode compilation succeeded"

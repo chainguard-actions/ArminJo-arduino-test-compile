@@ -113,7 +113,7 @@ if [[ -f $HOME/arduino_ide/arduino-cli ]]; then
   echo -e "cached: ${GREEN}\xe2\x9c\x93" # never seen :-(
 else
   echo -n "downloading: "
-  wget --quiet "https://downloads.arduino.cc/arduino-cli/arduino-cli_${CLI_VERSION}_Linux_64bit.tar.gz"
+  wget --quiet https://downloads.arduino.cc/arduino-cli/arduino-cli_${CLI_VERSION}_Linux_64bit.tar.gz
   if [[ $? -ne 0 ]]; then 
     echo -e "${RED}\xe2\x9c\x96"
     echo "::error:: Unable to download arduino-cli_${CLI_VERSION}_Linux_64bit.tar.gz"
@@ -195,10 +195,9 @@ if [[ ${PLATFORM} != *arduino* && -z $PLATFORM_URL ]]; then
   fi
 fi
 
-declare -a PLATFORM_URL_ARGS=()
 if [[ -n $PLATFORM_URL ]]; then
   PLATFORM_URL=${PLATFORM_URL// /,} # replace space by comma to enable multiple urls which are space separated
-  PLATFORM_URL_ARGS=(--additional-urls "$PLATFORM_URL")
+  PLATFORM_URL_COMMAND="--additional-urls"
 fi
 
 PLATFORM=${PLATFORM//,/ } # replace all comma by space to enable multiple platforms which are comma separated
@@ -208,15 +207,15 @@ if [[ $DEBUG_INSTALL == true ]]; then
 fi
 for single_platform in "${PLATFORM_ARRAY[@]}"; do # Loop over all platforms specified
   if [[ $DEBUG_INSTALL == true ]]; then
-    echo -e "arduino-cli core update-index ${PLATFORM_URL_ARGS[*]} --verbose"
-    arduino-cli core update-index "${PLATFORM_URL_ARGS[@]}" --verbose # must specify --additional-urls here
-    echo -e "arduino-cli core install $single_platform ${PLATFORM_URL_ARGS[*]} -v"
-    arduino-cli core install "$single_platform" "${PLATFORM_URL_ARGS[@]}" --verbose
+    echo -e "arduino-cli core update-index $PLATFORM_URL_COMMAND $PLATFORM_URL --verbose"
+    arduino-cli core update-index $PLATFORM_URL_COMMAND $PLATFORM_URL --verbose # must specify --additional-urls here
+    echo -e "arduino-cli core install $single_platform $PLATFORM_URL_COMMAND $PLATFORM_URL -v"
+    arduino-cli core install $single_platform $PLATFORM_URL_COMMAND $PLATFORM_URL --verbose
   else
-    echo -e "arduino-cli core update-index ${PLATFORM_URL_ARGS[*]} > /dev/null"
-    arduino-cli core update-index "${PLATFORM_URL_ARGS[@]}" > /dev/null # must specify --additional-urls here
-    echo -e "arduino-cli core install $single_platform ${PLATFORM_URL_ARGS[*]} > /dev/null"
-    arduino-cli core install "$single_platform" "${PLATFORM_URL_ARGS[@]}" > /dev/null
+    echo -e "arduino-cli core update-index $PLATFORM_URL_COMMAND $PLATFORM_URL > /dev/null"
+    arduino-cli core update-index $PLATFORM_URL_COMMAND $PLATFORM_URL > /dev/null # must specify --additional-urls here
+    echo -e "arduino-cli core install $single_platform $PLATFORM_URL_COMMAND $PLATFORM_URL > /dev/null"
+    arduino-cli core install $single_platform $PLATFORM_URL_COMMAND $PLATFORM_URL > /dev/null
   fi
 done
 
@@ -265,15 +264,10 @@ else
   IFS=$','
   declare -a REQUIRED_LIBRARIES_ARRAY=( $REQUIRED_LIBRARIES )
   IFS="$BACKUP_IFS"
-  # Split EXTRA_ARDUINO_LIB_INSTALL_ARGS into an array for safe expansion
-  declare -a EXTRA_LIB_ARGS_ARRAY=()
-  if [[ -n $EXTRA_ARDUINO_LIB_INSTALL_ARGS ]]; then
-    read -ra EXTRA_LIB_ARGS_ARRAY <<< "$EXTRA_ARDUINO_LIB_INSTALL_ARGS"
-  fi
   if [[ $DEBUG_INSTALL == true ]]; then
-    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" "${EXTRA_LIB_ARGS_ARRAY[@]}"
+    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" $EXTRA_ARDUINO_LIB_INSTALL_ARGS
   else
-    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" "${EXTRA_LIB_ARGS_ARRAY[@]}" >/dev/null 2>&1
+    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" $EXTRA_ARDUINO_LIB_INSTALL_ARGS >/dev/null 2>&1
   fi
   if [[ $? -ne 0 ]]; then
     echo "::error::Installation of $REQUIRED_LIBRARIES failed"
@@ -369,14 +363,8 @@ for sketch_name in "${SKETCH_NAMES_ARRAY[@]}"; do # Loop over all sketch names
         cp --recursive ${SKETCH_PATH}/* $HOME/$SKETCH_BASENAME
         SKETCH_PATH=$HOME/$SKETCH_BASENAME
       fi
-      declare -a BUILD_PATH_ARGS=()
       if [[ $SET_BUILD_PATH == true ]]; then
-        BUILD_PATH_ARGS=(--build-path "$SKETCH_PATH/build/")
-      fi
-      # Split EXTRA_ARDUINO_CLI_ARGS into an array for safe expansion
-      declare -a EXTRA_CLI_ARGS_ARRAY=()
-      if [[ -n $EXTRA_ARDUINO_CLI_ARGS ]]; then
-        read -ra EXTRA_CLI_ARGS_ARRAY <<< "$EXTRA_ARDUINO_CLI_ARGS"
+        BUILD_PATH_PARAMETER="--build-path $SKETCH_PATH/build/"
       fi
       # Check if there is an entry in the associative array and create compile parameter to put in compiler.*.extra_flags
       # This flags are also defined in platform.txt as empty, to be overwritten by a platform.local.txt definition.
@@ -392,16 +380,16 @@ for sketch_name in "${SKETCH_NAMES_ARRAY[@]}"; do # Loop over all sketch names
         GCC_EXTRA_FLAGS=
       fi
       if [[ -z $GCC_EXTRA_FLAGS ]]; then
-        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn "${ARDUINO_BOARD_FQBN%|*}" "${BUILD_PATH_ARGS[@]}" "${EXTRA_CLI_ARGS_ARRAY[@]}" "$SKETCH_PATH" 2>&1)
+        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH 2>&1)
       else
-        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn "${ARDUINO_BOARD_FQBN%|*}" "${BUILD_PATH_ARGS[@]}" --build-property compiler.cpp.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.c.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.S.extra_flags="${GCC_EXTRA_FLAGS}" "${EXTRA_CLI_ARGS_ARRAY[@]}" "$SKETCH_PATH" 2>&1)
+        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER --build-property compiler.cpp.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.c.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.S.extra_flags="${GCC_EXTRA_FLAGS}" $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH 2>&1)
       fi
       if [[ $? -ne 0 ]]; then
         echo -e ""${RED}"\xe2\x9c\x96" # If ok output a green checkmark else a red X and the command output.
         if [[ -z $GCC_EXTRA_FLAGS ]]; then
-          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} ${BUILD_PATH_ARGS[*]} $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
+          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
         else
-          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} ${BUILD_PATH_ARGS[*]} --build-property compiler.cpp.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.c.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.S.extra_flags=\"${GCC_EXTRA_FLAGS}\" $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
+          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER --build-property compiler.cpp.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.c.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.S.extra_flags=\"${GCC_EXTRA_FLAGS}\" $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
         fi
         echo "::error::Compile of $SKETCH_BASENAME ${GCC_EXTRA_FLAGS} failed"
         echo -e "$build_stdout \n"
@@ -411,9 +399,9 @@ for sketch_name in "${SKETCH_NAMES_ARRAY[@]}"; do # Loop over all sketch names
       else
         echo -e "${GREEN}\xe2\x9c\x93"
         if [[ -z $GCC_EXTRA_FLAGS ]]; then
-          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} ${BUILD_PATH_ARGS[*]} $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
+          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
         else
-          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} ${BUILD_PATH_ARGS[*]} --build-property compiler.cpp.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.c.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.S.extra_flags=\"${GCC_EXTRA_FLAGS}\" $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
+          echo "arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER --build-property compiler.cpp.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.c.extra_flags=\"${GCC_EXTRA_FLAGS}\" --build-property compiler.S.extra_flags=\"${GCC_EXTRA_FLAGS}\" $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH"
         fi
         if [[ $DEBUG_COMPILE == true || $SET_BUILD_PATH == true ]]; then
           echo "Debug mode enabled => compile output will be printed also for successful compilation and sketch directory is listed after compilation"
