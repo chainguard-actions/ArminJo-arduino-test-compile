@@ -6,13 +6,13 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v3 | [`v3`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3) | [`d02d365`](https://github.com/ArminJo/arduino-test-compile/commit/d02d365b1776367122ba4c9bbfe333dbc94b2722) |
-| v3.1.0 | [`v3.1.0`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.1.0) | [`ff0e11d`](https://github.com/ArminJo/arduino-test-compile/commit/ff0e11d837e54c63c68c732795e773ea9e030ed0) |
-| v3.2.0 | [`v3.2.0`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.2.0) | [`f62f016`](https://github.com/ArminJo/arduino-test-compile/commit/f62f0163b11302441f58b50f8905a495f01ce858) |
-| v3.2.1 | [`v3.2.1`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.2.1) | [`a064515`](https://github.com/ArminJo/arduino-test-compile/commit/a0645157de643ca05706c22a901c2080df62d570) |
-| v3.3.0 | [`v3.3.0`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.3.0) | [`eed4b1b`](https://github.com/ArminJo/arduino-test-compile/commit/eed4b1b5e14c0f1fcb16945a3033d1e0c90e38ba) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v3 | [`v3`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3) | [`d02d365`](https://github.com/ArminJo/arduino-test-compile/commit/d02d365b1776367122ba4c9bbfe333dbc94b2722) | [`HARDENING.md`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/blob/v3/HARDENING.md) |
+| v3.1.0 | [`v3.1.0`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.1.0) | [`ff0e11d`](https://github.com/ArminJo/arduino-test-compile/commit/ff0e11d837e54c63c68c732795e773ea9e030ed0) | [`HARDENING.md`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/blob/v3.1.0/HARDENING.md) |
+| v3.2.0 | [`v3.2.0`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.2.0) | [`f62f016`](https://github.com/ArminJo/arduino-test-compile/commit/f62f0163b11302441f58b50f8905a495f01ce858) | [`HARDENING.md`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/blob/v3.2.0/HARDENING.md) |
+| v3.2.1 | [`v3.2.1`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.2.1) | [`a064515`](https://github.com/ArminJo/arduino-test-compile/commit/a0645157de643ca05706c22a901c2080df62d570) | [`HARDENING.md`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/blob/v3.2.1/HARDENING.md) |
+| v3.3.0 | [`v3.3.0`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/tree/v3.3.0) | [`eed4b1b`](https://github.com/ArminJo/arduino-test-compile/commit/eed4b1b5e14c0f1fcb16945a3033d1e0c90e38ba) | [`HARDENING.md`](https://github.com/chainguard-actions/ArminJo-arduino-test-compile/blob/v3.3.0/HARDENING.md) |
 
 ## Privacy
 
