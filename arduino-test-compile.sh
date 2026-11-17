@@ -205,22 +205,22 @@ if [[ $DEBUG_INSTALL == true ]]; then
 fi
 for single_platform in "${PLATFORM_ARRAY[@]}"; do # Loop over all platforms specified
   if [[ $DEBUG_INSTALL == true ]]; then
-    echo -e "arduino-cli core update-index ${PLATFORM_URL_COMMAND:+$PLATFORM_URL_COMMAND} ${PLATFORM_URL:+$PLATFORM_URL} --verbose"
+    echo -e "arduino-cli core update-index $PLATFORM_URL_COMMAND $PLATFORM_URL --verbose"
     arduino-cli core update-index ${PLATFORM_URL_COMMAND:+"$PLATFORM_URL_COMMAND"} ${PLATFORM_URL:+"$PLATFORM_URL"} --verbose # must specify --additional-urls here
     if [[ $? -ne 0 ]]; then
       echo "::error::Updating index of $PLATFORM_URL failed"
       exit 1
     fi
-    echo -e "arduino-cli core install $single_platform ${PLATFORM_URL_COMMAND:+$PLATFORM_URL_COMMAND} ${PLATFORM_URL:+$PLATFORM_URL} -v"
+    echo -e "arduino-cli core install $single_platform $PLATFORM_URL_COMMAND $PLATFORM_URL -v"
     arduino-cli core install "$single_platform" ${PLATFORM_URL_COMMAND:+"$PLATFORM_URL_COMMAND"} ${PLATFORM_URL:+"$PLATFORM_URL"} --verbose
   else
-    echo -e "arduino-cli core update-index ${PLATFORM_URL_COMMAND:+$PLATFORM_URL_COMMAND} ${PLATFORM_URL:+$PLATFORM_URL} > /dev/null"
+    echo -e "arduino-cli core update-index $PLATFORM_URL_COMMAND $PLATFORM_URL > /dev/null"
     arduino-cli core update-index ${PLATFORM_URL_COMMAND:+"$PLATFORM_URL_COMMAND"} ${PLATFORM_URL:+"$PLATFORM_URL"} > /dev/null # must specify --additional-urls here
     if [[ $? -ne 0 ]]; then
       echo "::error::Updating index of $PLATFORM_URL failed"
       exit 1
     fi
-    echo -e "arduino-cli core install $single_platform ${PLATFORM_URL_COMMAND:+$PLATFORM_URL_COMMAND} ${PLATFORM_URL:+$PLATFORM_URL} > /dev/null"
+    echo -e "arduino-cli core install $single_platform $PLATFORM_URL_COMMAND $PLATFORM_URL > /dev/null"
     arduino-cli core install "$single_platform" ${PLATFORM_URL_COMMAND:+"$PLATFORM_URL_COMMAND"} ${PLATFORM_URL:+"$PLATFORM_URL"} > /dev/null
   fi
     if [[ $? -ne 0 ]]; then
@@ -274,13 +274,11 @@ else
   IFS=$','
   declare -a REQUIRED_LIBRARIES_ARRAY=( $REQUIRED_LIBRARIES )
   IFS="$BACKUP_IFS"
-  # Split space-separated extra lib install args into an array
-  read -r -a EXTRA_ARDUINO_LIB_INSTALL_ARGS_ARRAY <<< "$EXTRA_ARDUINO_LIB_INSTALL_ARGS"
   if [[ $DEBUG_INSTALL == true ]]; then
     echo "arduino-cli lib install \"${REQUIRED_LIBRARIES_ARRAY[@]}\" $EXTRA_ARDUINO_LIB_INSTALL_ARGS"
-    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" "${EXTRA_ARDUINO_LIB_INSTALL_ARGS_ARRAY[@]}"
+    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" $EXTRA_ARDUINO_LIB_INSTALL_ARGS
   else
-    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" "${EXTRA_ARDUINO_LIB_INSTALL_ARGS_ARRAY[@]}" >/dev/null 2>&1
+    arduino-cli lib install "${REQUIRED_LIBRARIES_ARRAY[@]}" $EXTRA_ARDUINO_LIB_INSTALL_ARGS >/dev/null 2>&1
   fi
   if [[ $? -ne 0 ]]; then
     echo "::error::Installation of $REQUIRED_LIBRARIES failed"
@@ -290,9 +288,6 @@ fi
 
 # Save generated files to the build subfolder of the sketch
 export ARDUINO_SKETCH_ALWAYS_EXPORT_BINARIES=true
-
-# Split space-separated extra arduino-cli args into an array
-read -r -a EXTRA_ARDUINO_CLI_ARGS_ARRAY <<< "$EXTRA_ARDUINO_CLI_ARGS"
 
 #
 # Get the build property map
@@ -333,9 +328,9 @@ COMPILED_SKETCHES=
 for sketch_name in "${SKETCH_NAMES_ARRAY[@]}"; do # Loop over all sketch names
   if [[ $SET_BUILD_PATH == true ]]; then
   # must use $GITHUB_WORKSPACE/$SKETCH_NAMES_FIND_START, since arduino-cli does not support relative path for --build-path
-    declare -a SKETCHES=($(find "${GITHUB_WORKSPACE}/${SKETCH_NAMES_FIND_START}" -type f -name "$sketch_name")) # only search for files
+    declare -a SKETCHES=($(find ${GITHUB_WORKSPACE}/${SKETCH_NAMES_FIND_START} -type f -name "$sketch_name")) # only search for files
   else
-    declare -a SKETCHES=($(find "${SKETCH_NAMES_FIND_START}" -type f -name "$sketch_name")) # only search for files
+    declare -a SKETCHES=($(find ${SKETCH_NAMES_FIND_START} -type f -name "$sketch_name")) # only search for files
   fi
   if [[ $DEBUG_COMPILE == true ]]; then
     declare -p SKETCHES
@@ -350,7 +345,7 @@ for sketch_name in "${SKETCH_NAMES_ARRAY[@]}"; do # Loop over all sketch names
     # No files found -> list start directory and execute find command to see what we did
     echo -e "find command is: find ${GITHUB_WORKSPACE}/${SKETCH_NAMES_FIND_START} -type f -name \"$sketch_name\""
     echo "\"sketch-names-find-start\" directory content listing with: ls -l ${GITHUB_WORKSPACE}/${SKETCH_NAMES_FIND_START}"
-    ls -l "${GITHUB_WORKSPACE}/${SKETCH_NAMES_FIND_START}"
+    ls -l ${GITHUB_WORKSPACE}/${SKETCH_NAMES_FIND_START}
     echo
   fi
 
@@ -396,9 +391,9 @@ for sketch_name in "${SKETCH_NAMES_ARRAY[@]}"; do # Loop over all sketch names
         GCC_EXTRA_FLAGS=
       fi
       if [[ -z $GCC_EXTRA_FLAGS ]]; then
-        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn "${ARDUINO_BOARD_FQBN%|*}" $BUILD_PATH_PARAMETER "${EXTRA_ARDUINO_CLI_ARGS_ARRAY[@]}" "$SKETCH_PATH" 2>&1)
+        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH 2>&1)
       else
-        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn "${ARDUINO_BOARD_FQBN%|*}" $BUILD_PATH_PARAMETER --build-property compiler.cpp.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.c.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.S.extra_flags="${GCC_EXTRA_FLAGS}" "${EXTRA_ARDUINO_CLI_ARGS_ARRAY[@]}" "$SKETCH_PATH" 2>&1)
+        build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${ARDUINO_BOARD_FQBN%|*} $BUILD_PATH_PARAMETER --build-property compiler.cpp.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.c.extra_flags="${GCC_EXTRA_FLAGS}" --build-property compiler.S.extra_flags="${GCC_EXTRA_FLAGS}" $EXTRA_ARDUINO_CLI_ARGS $SKETCH_PATH 2>&1)
       fi
       if [[ $? -ne 0 ]]; then
         echo -e ""${RED}"\xe2\x9c\x96" # If ok output a green checkmark else a red X and the command output.
