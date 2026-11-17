@@ -4,52 +4,139 @@
 
 > This file was generated automatically by the hardening agent.
 
-**Policy SHA:** `d636be7e43ef829af6e853da6b3c7566db9f72fe`
+**Policy SHA:** `374911c4be584df24e6da57af2d990570ef0f859`
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
 **Harden Agent Version:** `2`
 
-Action **ArminJo--arduino-test-compile/v3** was hardened automatically. 3 finding(s) were identified and resolved across 1 iteration(s).
+Action **ArminJo--arduino-test-compile/v3** was hardened automatically. 2 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### script-injection (severity: high)
 
-Sub-rule (a): The `run:` field in action.yml directly interpolates the GitHub Actions expression `${{ github.action_path }}` into the shell command string. Any `${{ ... }}` expression inside a `run:` block is a script-injection risk because the value is substituted by the Actions runner before the shell ever sees it, bypassing shell quoting. The offending line is: `run: ${{ github.action_path }}/arduino-test-compile.sh`. This should be replaced with the environment variable `$GITHUB_ACTION_PATH` which is always available in composite actions.
+Rule (a): a GitHub Actions expression is placed straight into a run: block in the composite step. The offending line is `run: ${{ github.action_path }}/arduino-test-compile.sh`. Use the shell env var instead: `run: "$GITHUB_ACTION_PATH/arduino-test-compile.sh"`.
 
 Locations:
 
-- `action.yml:107`
+- `action.yml:113`
 
-### unpinned-uses (severity: high)
+### prior-fix (severity: high)
 
-All `uses:` references in both workflow files use the mutable branch ref `@master` instead of a pinned 40-character commit SHA. This exposes the workflow to supply-chain attacks if the referenced action is compromised or its history is rewritten. Failing references: `actions/checkout@master` (appears twice in each workflow), and `ArminJo/arduino-test-compile@master` (in ActionTest.yml).
+Carried forward from this version's previous harden, which fixed it; fix it again unless the code no longer has the problem. The previous harden changed action.yml without recording a finding for it, and this analysis reported nothing there. Re-apply its security changes unless the code no longer needs them. The previous patch:
+```diff
+diff --git a/action.yml b/action.yml
+index 0f2b960..db3327f 100644
+--- a/action.yml
++++ b/action.yml
+@@ -6,69 +6,57 @@ inputs:
+     description: 'Version of arduino-cli to use when building. Current (9/2025) one is 1.3.1.'
+     default: 'latest'
+     required: false
+-
+   sketch-names:
+     description: 'Comma sepatated list of patterns or filenames (without path, but with extension) of the sketch(es) to test compile. Useful if the sketch is a *.cpp or *.c file or only one sketch in the repository should be compiled.'
+     default: '*.ino'
+     required: false
+-
+   sketch-names-find-start:
+     description: 'The start directory to look for the sketch-names to test compile. Can be a path like "digistump-avr/libraries/*/examples/C*/".'
+     default: '.'
+     required: false
+-
+   arduino-board-fqbn:
+     #In the Arduino IDE, the fqbn is printed in the first line of the verbose output for compilation as parameter -fqbn=... for the "arduino-builder -dump-prefs" command
+     description: 'Fully Qualified Board Name of the Arduino board. You may add a suffix behind the fqbn with "|" to specify one board for e.g. different compile options like arduino:avr:uno|trace.'
+     default: 'arduino:avr:uno'
+     required: false
+-
+   arduino-platform:
+     description: 'Comma separated list of platform specifiers, if you require a fixed version like "arduino:avr@1.8.2" or do not want the specifier derived from the 2 first elements of the arduino-board-fqbn or need more than one core. The suffix "@latest" is always removed.'
+     default: ''
+     required: false
+-
+   platform-default-url:
+     description: 'The platform URL for the required board description if arduino-board-fqbn does not start with "arduino:" and not explicitly specified by platform-url.'
+     default: ''
+     required: false
+-
+   platform-url:
+     description: 'The platform URL for the required board description if arduino-board-fqbn does not start with "arduino:".'
+     default: ''
+     required: false
+-
+   required-libraries:
+     description: 'Comma separated list of arduino library names required for compiling the sketches / examples for this board. Add version number by e.g. @1.2.0.'
+     default: ''
+     required: false
+-
+   sketches-exclude:
+     description: 'Comma or space separated list of complete names of all sketches / examples to be excluded in the build for this board.'
+     default: ''
+     required: false
+-
+   build-properties:
+     description: |
+       Build parameter like -DDEBUG for each example specified or for all examples, if example name is "All". In json format.
+       For example: build-properties: '{ "WhistleSwitch": "-DDEBUG -DFREQUENCY_RANGE_LOW", "SimpleFrequencyDetector": "-DINFO" }'.
+     default: ''
+     required: false
+-
+   extra-arduino-cli-args:
+     description: |
+       This string is passed verbatim without double quotes to the arduino-cli compile commandline as last argument before the filename.
+       See https://arduino.github.io/arduino-cli/commands/arduino-cli_compile/ for compile parameters.
+     default: ''
+     required: false
+-
+   extra-arduino-lib-install-args:
+     description: |
+       This string is passed verbatim without double quotes to the arduino-cli lib install commandline as last argument before the library names.
+       It can be used e.g. to suppress dependency resolving for libraries by using --no-deps as argument string.
+     default: ''
+     required: false
+-
+   set-build-path:
+     description: |
+       Flag to set the build directory (arduino-cli paramer --build-path) to /build subdirectory of compiled sketches.
+@@ -76,43 +64,55 @@ inputs:
+       They are logged if debug-compile is set to "true".
+     default: 'false'
+     required: false
+-
+   debug-compile:
+     description: 'If set to "true" the action logs verbose compile output even during successful builds.'
+     default: ''
+     required: false
+-
+   debug-install:
+     description: 'If set to "true" the action logs verbose arduino-cli output during installation.'
+     default: ''
+     required: false
+-
+ runs:
+   using: 'composite'
+   steps:
+     - n
+... (truncated)
+```
 
 Locations:
 
-- `.github/workflows/arduino-test-compile-ActionTest.yml:88`
-- `.github/workflows/arduino-test-compile-ActionTest.yml:92`
-- `.github/workflows/arduino-test-compile-ActionTest.yml:97`
-- `.github/workflows/arduino-test-compile-ScriptTest.yml:88`
-- `.github/workflows/arduino-test-compile-ScriptTest.yml:92`
-
-### missing-permissions (severity: medium)
-
-Neither workflow file defines a `permissions:` block at the top level, and no job within either file defines its own `permissions:` block. Without explicit permissions, workflows run with the repository's default token permissions, which may be overly broad (e.g., write access to contents, packages, etc.). A minimal `permissions: read-all` or specific per-scope permissions should be added.
-
-Locations:
-
-- `.github/workflows/arduino-test-compile-ActionTest.yml:1`
-- `.github/workflows/arduino-test-compile-ScriptTest.yml:1`
+- `action.yml`
 
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** script-injection, unpinned-uses, missing-permissions
+**Fixes applied:** script-injection, prior-fix
 
 **Notes:**
 
-Fixed three security findings: (1) script-injection in action.yml by replacing `${{ github.action_path }}` with `$GITHUB_ACTION_PATH` environment variable; (2) pinned all unpinned @master action references to full commit SHAs - actions/checkout to 61b9e3751b92087fd0b06925ba6dd6314e06f089 and ArminJo/arduino-test-compile to d02d365b1776367122ba4c9bbfe333dbc94b2722; (3) added `permissions: contents: read` block to both workflow files (ActionTest.yml and ScriptTest.yml).
+In action.yml, the run: line no longer has the ${{ github.action_path }} expression in it. It now runs the script as "$GITHUB_ACTION_PATH/arduino-test-compile.sh" (quoted, under bash). That expression was the only one in a run: line, because every input already reaches the script through env: variables.
+
+The prior-fix diff I was given was cut off. The part I could see only deleted blank lines between the inputs, which has no security effect. I assume its hidden part made this same run: change, so this pass re-applies that, but I couldn't confirm it.
+
+I searched arduino-test-compile.sh for curl/wget piped into a shell, eval, and writes to GITHUB_ENV/GITHUB_OUTPUT. The only match is a wget that downloads the arduino-cli tarball to a file, and nothing runs it as a script, so I left it alone. I didn't read the rest of the script line by line.
 
